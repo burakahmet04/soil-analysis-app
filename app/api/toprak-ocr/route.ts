@@ -9,21 +9,21 @@ const ALAN_ACIKLAMALARI: Record<(typeof TAHLIL_ALAN_ADLARI)[number], string> = {
   bunye: `Toprağın bünye/tekstür SINIFI — bir SAYI DEĞİL, bir metin sınıfı. Raporda genelde "SATURASYON" veya "BÜNYE"
 satırının "Değerlendirme" ya da "Sonuç" sütununda doğrudan yazılı olur (örn. "KİL", "KİLLİ TINLI"). Sadece şu 5
 değerden birini yaz: "Kum", "Tınlı", "Killi Tınlı", "Kil", "Ağır Kil". Bulamazsan boş string ("") bırak.`,
-  ph: 'pH satırının "Analiz Sonucu" sütunundaki sayı (örn. 7.82). Birim ekleme.',
-  kirec: 'KİREÇ (%) satırının "Analiz Sonucu" sütunundaki sayı. Birim ekleme.',
-  organikMadde: 'ORGANİK MADDE (%) satırının "Analiz Sonucu" sütunundaki sayı. Birim ekleme.',
-  ec: 'EC (iletkenlik, ms/cm veya dS/m) satırının "Analiz Sonucu" sütunundaki sayı. Birim ekleme.',
-  azot: 'AZOT / N (%) satırının "Analiz Sonucu" sütunundaki sayı. Birim ekleme.',
-  fosfor: 'FOSFOR / P (ppm) satırının "Analiz Sonucu" sütunundaki sayı. Birim ekleme.',
-  potasyum: 'POTASYUM / K (ppm) satırının "Analiz Sonucu" sütunundaki sayı. Birim ekleme.',
-  kalsiyum: 'KALSİYUM / Ca (ppm) satırının "Analiz Sonucu" sütunundaki sayı. Birim ekleme.',
-  magnezyum: 'MAGNEZYUM / Mg (ppm) satırının "Analiz Sonucu" sütunundaki sayı. Birim ekleme.',
-  sodyum: 'SODYUM / Na (ppm) satırının "Analiz Sonucu" sütunundaki sayı. Birim ekleme.',
-  demir: 'DEMİR / Fe (ppm) satırının "Analiz Sonucu" sütunundaki sayı. Birim ekleme.',
-  bakir: 'BAKIR / Cu (ppm) satırının "Analiz Sonucu" sütunundaki sayı. Birim ekleme.',
-  cinko: 'ÇİNKO / Zn (ppm) satırının "Analiz Sonucu" sütunundaki sayı. Birim ekleme.',
-  mangan: 'MANGAN / Mn (ppm) satırının "Analiz Sonucu" sütunundaki sayı. Birim ekleme.',
-  bor: 'BOR / B (ppm) satırının "Analiz Sonucu" sütunundaki sayı. Birim ekleme.',
+  ph: 'pH parametresinin ÖLÇÜLEN SONUÇ değeri (örn. 7.82) — sınır/referans/aralık değerleri değil. Birim ekleme.',
+  kirec: 'KİREÇ (%) parametresinin ÖLÇÜLEN SONUÇ değeri — sınır/referans/aralık değerleri değil. Birim ekleme.',
+  organikMadde: 'ORGANİK MADDE (%) parametresinin ÖLÇÜLEN SONUÇ değeri — sınır/referans/aralık değerleri değil. Birim ekleme.',
+  ec: 'EC (iletkenlik, ms/cm veya dS/m) parametresinin ÖLÇÜLEN SONUÇ değeri — sınır/referans/aralık değerleri değil. Birim ekleme.',
+  azot: 'AZOT / N (%) parametresinin ÖLÇÜLEN SONUÇ değeri — sınır/referans/aralık değerleri değil. Birim ekleme.',
+  fosfor: 'FOSFOR / P (ppm) parametresinin ÖLÇÜLEN SONUÇ değeri — sınır/referans/aralık değerleri değil. Birim ekleme.',
+  potasyum: 'POTASYUM / K (ppm) parametresinin ÖLÇÜLEN SONUÇ değeri — sınır/referans/aralık değerleri değil. Birim ekleme.',
+  kalsiyum: 'KALSİYUM / Ca (ppm) parametresinin ÖLÇÜLEN SONUÇ değeri — sınır/referans/aralık değerleri değil. Birim ekleme.',
+  magnezyum: 'MAGNEZYUM / Mg (ppm) parametresinin ÖLÇÜLEN SONUÇ değeri — sınır/referans/aralık değerleri değil. Birim ekleme.',
+  sodyum: 'SODYUM / Na (ppm) parametresinin ÖLÇÜLEN SONUÇ değeri — sınır/referans/aralık değerleri değil. Birim ekleme.',
+  demir: 'DEMİR / Fe (ppm) parametresinin ÖLÇÜLEN SONUÇ değeri — sınır/referans/aralık değerleri değil. Birim ekleme.',
+  bakir: 'BAKIR / Cu (ppm) parametresinin ÖLÇÜLEN SONUÇ değeri — sınır/referans/aralık değerleri değil. Birim ekleme.',
+  cinko: 'ÇİNKO / Zn (ppm) parametresinin ÖLÇÜLEN SONUÇ değeri — sınır/referans/aralık değerleri değil. Birim ekleme.',
+  mangan: 'MANGAN / Mn (ppm) parametresinin ÖLÇÜLEN SONUÇ değeri — sınır/referans/aralık değerleri değil. Birim ekleme.',
+  bor: 'BOR / B (ppm) parametresinin ÖLÇÜLEN SONUÇ değeri — sınır/referans/aralık değerleri değil. Birim ekleme.',
 };
 
 const alanlarSchema = {
@@ -83,11 +83,14 @@ export async function POST(req: Request) {
       ],
       config: {
         systemInstruction: `Sen bir toprak tahlil raporu okuma asistanısın. Sağlanan görsel/PDF, Türkiye'deki akredite bir tarımsal analiz
-laboratuvarının (örn. METALAB gibi) düzenlediği "Toprak Analiz Raporu" olabilir. Genelde "Analiz Sonuçları" başlıklı bir
-tabloda parametre adı, birim, yöntem ve "Analiz Sonucu" sütunları bulunur — değerleri her zaman "Analiz Sonucu"
-sütunundan al, sınır/referans değer sütunlarından değil. Her alanın tam olarak ne aradığı şemadaki açıklamasında
-(description) belirtilmiştir, buna sadık kal — özellikle "bunye" diğerlerinden farklı olarak bir SAYI değil, bir
-METİN SINIFIdır.
+laboratuvarının (örn. METALAB gibi) düzenlediği "Toprak Analiz Raporu" olabilir. Bu raporlarda her parametre için genelde
+birden fazla sayı görürsün: gerçekte ÖLÇÜLEN sonuç, ve ayrıca sınır/referans/karşılaştırma aralığı değerleri (örn. "Çok
+Düşük 2,5 Düşük 8 Orta 25 Yüksek 80" gibi bir ölçek). Her zaman gerçekte ÖLÇÜLEN sonucu al — genelde tablodaki en
+belirgin/kalın yazılan tekil sayıdır, satırın başında veya kendine ait bir sütunda durur; ölçek/eşik listesindeki sayıları
+asla alma. Rapor tek bir sayfa/tablo değil, birden fazla sayfa halinde gelebilir; her parametreyi tüm sayfalarda ara.
+
+Her alanın tam olarak ne aradığı şemadaki açıklamasında (description) belirtilmiştir, buna sadık kal — özellikle "bunye"
+diğerlerinden farklı olarak bir SAYI değil, bir METİN SINIFIdır.
 
 Bir değeri raporda bulamıyorsan veya net okuyamıyorsan o alanı boş string ("") olarak bırak, asla tahmin veya uydurma
 değer üretme.`,
