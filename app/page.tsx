@@ -54,21 +54,20 @@ export default function Home() {
       });
       const veri = await res.json();
       if (veri.success) {
-        let doldurulanAlanSayisi = 0;
-        setForm((onceki) => {
-          const guncel = { ...onceki };
-          for (const alan of TAHLIL_ALAN_ADLARI) {
-            const deger = veri.alanlar?.[alan];
-            if (typeof deger === 'string' && deger.trim()) {
-              guncel[alan] = deger.trim();
-              doldurulanAlanSayisi += 1;
-            }
-          }
-          return guncel;
+        const doldurulanAlanlar = TAHLIL_ALAN_ADLARI.filter((alan) => {
+          const deger = veri.alanlar?.[alan];
+          return typeof deger === 'string' && deger.trim();
         });
 
-        if (doldurulanAlanSayisi > 0) {
-          setOcrBilgi(`Belgeden ${doldurulanAlanSayisi} alan otomatik dolduruldu, kontrol edip düzenleyebilirsiniz.`);
+        if (doldurulanAlanlar.length > 0) {
+          setForm((onceki) => {
+            const guncel = { ...onceki };
+            for (const alan of doldurulanAlanlar) {
+              guncel[alan] = (veri.alanlar[alan] as string).trim();
+            }
+            return guncel;
+          });
+          setOcrBilgi(`Belgeden ${doldurulanAlanlar.length} alan otomatik dolduruldu, kontrol edip düzenleyebilirsiniz.`);
         } else {
           setOcrHata('Belgeden herhangi bir toprak tahlil değeri okunamadı. Değerleri elle girebilir veya daha net bir görsel/PDF deneyebilirsiniz.');
         }
