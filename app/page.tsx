@@ -38,8 +38,9 @@ export default function Home() {
       } else {
         setRapor('Hata: ' + data.error);
       }
-    } catch (err: any) {
-      setRapor('Bağlantı hatası: ' + err.message);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Bilinmeyen hata';
+      setRapor('Bağlantı hatası: ' + message);
     } finally {
       setYukleniyor(false);
     }
