@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import ToprakForm from './components/ToprakForm';
 import ToprakKarnesiGorunumu from './components/ToprakKarnesiGorunumu';
+import { YaprakIkonu } from './components/icons';
 import { BOS_FORM, ToprakFormValues, ToprakKarnesi } from './lib/types';
 
 const MAX_DOSYA_BOYUTU = 5 * 1024 * 1024; // 5MB
@@ -98,30 +99,50 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-100 p-6 md:p-12 text-slate-900">
-      <div className="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow border">
-        <h1 className="text-2xl font-bold text-emerald-800 mb-2">Toprak Tahlili ve Gübreleme Motoru</h1>
-        <p className="text-sm text-slate-500 mb-6">
-          Tahlil raporunuzu yükleyin veya değerleri girip butona basın.
-        </p>
-
-        <ToprakForm
-          form={form}
-          onChange={handleChange}
-          onSubmit={handleSubmit}
-          onDosyaSecildi={handleDosyaSecildi}
-          yukleniyor={yukleniyor}
-          ocrYukleniyor={ocrYukleniyor}
-          ocrHata={ocrHata}
-        />
-
-        {raporHata && (
-          <div className="mt-6 p-4 bg-red-50 text-red-700 rounded border border-red-200 text-sm">
-            {raporHata}
+    <main className="min-h-screen px-4 py-10 md:py-16">
+      <div className="max-w-2xl mx-auto">
+        <header className="flex items-center gap-3 mb-8">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-700 text-brand-50 shadow-sm shadow-brand-900/20">
+            <YaprakIkonu className="h-6 w-6" />
+          </span>
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-700">
+              Toprak Analiz Platformu
+            </p>
+            <h1 className="font-display text-2xl font-semibold text-brand-950 leading-tight">
+              Toprak Tahlili ve Gübreleme Motoru
+            </h1>
           </div>
-        )}
+        </header>
 
-        {rapor && <ToprakKarnesiGorunumu form={form} rapor={rapor} raporRef={raporRef} />}
+        <div className="bg-surface p-6 md:p-8 rounded-2xl shadow-xl shadow-brand-950/5 border border-border-subtle">
+          <p className="text-sm text-foreground/60 mb-6">
+            Tahlil raporunuzu yükleyin veya değerleri girip butona basın; ürününüze özel bir toprak
+            karnesi ve gübreleme takvimi hazırlayalım.
+          </p>
+
+          <ToprakForm
+            form={form}
+            onChange={handleChange}
+            onSubmit={handleSubmit}
+            onDosyaSecildi={handleDosyaSecildi}
+            yukleniyor={yukleniyor}
+            ocrYukleniyor={ocrYukleniyor}
+            ocrHata={ocrHata}
+          />
+
+          {raporHata && (
+            <div className="mt-6 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200 text-sm">
+              {raporHata}
+            </div>
+          )}
+
+          {rapor && <ToprakKarnesiGorunumu form={form} rapor={rapor} raporRef={raporRef} />}
+        </div>
+
+        <p className="text-center text-xs text-foreground/40 mt-6">
+          Yapay zeka destekli tavsiyeler, sertifikalı bir ziraat mühendisinin teşhisinin yerini tutmaz.
+        </p>
       </div>
     </main>
   );

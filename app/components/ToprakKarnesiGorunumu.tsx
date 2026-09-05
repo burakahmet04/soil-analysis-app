@@ -2,11 +2,12 @@
 
 import { RefObject, useState } from 'react';
 import type { Durum, GenelDurum, ToprakFormValues, ToprakKarnesi } from '../lib/types';
+import { EtiketIkonu, IndirIkonu, KontrolIkonu, PaylasIkonu, TakvimIkonu, UyariIkonu } from './icons';
 
 const GENEL_DURUM_STIL: Record<GenelDurum, string> = {
-  iyi: 'bg-emerald-100 text-emerald-800 border-emerald-300',
-  orta: 'bg-amber-100 text-amber-800 border-amber-300',
-  kritik: 'bg-red-100 text-red-800 border-red-300',
+  iyi: 'bg-brand-600 text-brand-50',
+  orta: 'bg-earth-500 text-white',
+  kritik: 'bg-red-600 text-white',
 };
 
 const GENEL_DURUM_ETIKET: Record<GenelDurum, string> = {
@@ -17,9 +18,16 @@ const GENEL_DURUM_ETIKET: Record<GenelDurum, string> = {
 
 const DURUM_STIL: Record<Durum, string> = {
   düşük: 'bg-red-50 text-red-700 border-red-200',
-  yeterli: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  yüksek: 'bg-amber-50 text-amber-700 border-amber-200',
-  bilinmiyor: 'bg-slate-100 text-slate-600 border-slate-200',
+  yeterli: 'bg-brand-50 text-brand-800 border-brand-200',
+  yüksek: 'bg-earth-50 text-earth-800 border-earth-200',
+  bilinmiyor: 'bg-surface-muted text-foreground/60 border-border-subtle',
+};
+
+const DURUM_NOKTA: Record<Durum, string> = {
+  düşük: 'bg-red-500',
+  yeterli: 'bg-brand-500',
+  yüksek: 'bg-earth-500',
+  bilinmiyor: 'bg-foreground/30',
 };
 
 function whatsappMetniOlustur(form: ToprakFormValues, rapor: ToprakKarnesi): string {
@@ -70,7 +78,7 @@ async function pdfIndir(eleman: HTMLElement) {
     import('jspdf'),
   ]);
 
-  const imgData = await toPng(eleman, { pixelRatio: 2, backgroundColor: '#ffffff' });
+  const imgData = await toPng(eleman, { pixelRatio: 2, backgroundColor: '#fffdf8' });
   const img = new Image();
   await new Promise<void>((resolve, reject) => {
     img.onload = () => resolve();
@@ -98,6 +106,15 @@ async function pdfIndir(eleman: HTMLElement) {
   }
 
   pdf.save(`toprak-karnesi-${Date.now()}.pdf`);
+}
+
+function BolumBasligi({ ikon: Ikon, children }: { ikon: (p: { className?: string }) => React.JSX.Element; children: React.ReactNode }) {
+  return (
+    <h3 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-foreground/45 mb-3">
+      <Ikon className="h-3.5 w-3.5" />
+      {children}
+    </h3>
+  );
 }
 
 export default function ToprakKarnesiGorunumu({
@@ -141,111 +158,153 @@ export default function ToprakKarnesiGorunumu({
           type="button"
           onClick={handlePdfIndir}
           disabled={pdfOlusturuluyor}
-          className="px-4 py-2 text-sm font-medium rounded bg-slate-800 text-white hover:bg-slate-900 disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg
+            bg-foreground text-surface hover:opacity-90 transition disabled:opacity-50"
         >
+          <IndirIkonu className="h-4 w-4" />
           {pdfOlusturuluyor ? 'PDF Hazırlanıyor...' : 'PDF İndir'}
         </button>
         <button
           type="button"
           onClick={handleWhatsappKopyala}
-          className="px-4 py-2 text-sm font-medium rounded bg-emerald-600 text-white hover:bg-emerald-700"
+          className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg
+            bg-brand-600 text-white hover:bg-brand-700 transition"
         >
-          {kopyalandi ? 'Kopyalandı ✓' : 'WhatsApp Metnini Kopyala'}
+          {kopyalandi ? <KontrolIkonu className="h-4 w-4" /> : <PaylasIkonu className="h-4 w-4" />}
+          {kopyalandi ? 'Kopyalandı' : 'WhatsApp Metnini Kopyala'}
         </button>
       </div>
 
-      <div ref={raporRef} className="bg-white p-6 rounded-xl border space-y-6">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <h2 className="text-lg font-bold text-slate-800">Toprak Karnesi — {form.urun}</h2>
-          <span
-            className={`px-3 py-1 rounded-full text-xs font-semibold border ${GENEL_DURUM_STIL[rapor.genelDurum]}`}
-          >
+      <div ref={raporRef} className="bg-surface rounded-2xl border border-border-subtle overflow-hidden shadow-sm">
+        <div className={`px-6 py-5 flex items-center justify-between flex-wrap gap-3 ${GENEL_DURUM_STIL[rapor.genelDurum]}`}>
+          <h2 className="font-display text-lg font-semibold">Toprak Karnesi — {form.urun}</h2>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold backdrop-blur-sm">
+            <span className="h-1.5 w-1.5 rounded-full bg-white" />
             Genel Durum: {GENEL_DURUM_ETIKET[rapor.genelDurum]}
           </span>
         </div>
 
-        <p className="text-sm text-slate-700 leading-relaxed">{rapor.ozet}</p>
+        <div className="p-6 space-y-6">
+          <p className="text-sm text-foreground/75 leading-relaxed">{rapor.ozet}</p>
 
-        {rapor.degerlendirmeler.length > 0 && (
-          <section>
-            <h3 className="text-sm font-semibold text-slate-800 mb-2">Parametre Değerlendirmesi</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {rapor.degerlendirmeler.map((d, i) => (
-                <div key={i} className={`p-3 rounded border text-xs ${DURUM_STIL[d.durum]}`}>
-                  <div className="flex justify-between font-semibold">
-                    <span>{d.parametre}</span>
-                    <span>{d.deger || '—'}</span>
-                  </div>
-                  <div className="mt-1 opacity-90">{d.yorum}</div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {rapor.uyarilar.length > 0 && (
-          <section>
-            <h3 className="text-sm font-semibold text-slate-800 mb-2">Uyarılar</h3>
-            <ul className="space-y-1">
-              {rapor.uyarilar.map((u, i) => (
-                <li key={i} className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded px-3 py-2">
-                  ⚠️ {u}
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-
-        {rapor.gubrelemeTakvimi.length > 0 && (
-          <section>
-            <h3 className="text-sm font-semibold text-slate-800 mb-2">Gübreleme Takvimi</h3>
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs border-collapse">
-                <thead>
-                  <tr className="bg-slate-100 text-left">
-                    <th className="p-2 border">Dönem</th>
-                    <th className="p-2 border">Gübre</th>
-                    <th className="p-2 border">Doz (kg/da)</th>
-                    <th className="p-2 border">Uygulama Şekli</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rapor.gubrelemeTakvimi.map((g, i) => (
-                    <tr key={i} className="odd:bg-white even:bg-slate-50">
-                      <td className="p-2 border">{g.donem}</td>
-                      <td className="p-2 border">{g.gubre}</td>
-                      <td className="p-2 border">{g.dozKgDa}</td>
-                      <td className="p-2 border">{g.uygulamaSekli}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        )}
-
-        {rapor.ticariGubreKarsiliklari.length > 0 && (
-          <section>
-            <h3 className="text-sm font-semibold text-slate-800 mb-2">Ticari Gübre Karşılıkları</h3>
-            <div className="space-y-2">
-              {rapor.ticariGubreKarsiliklari.map((t, i) => (
-                <div key={i} className="text-xs border rounded p-3">
-                  <div className="font-semibold text-slate-800">{t.ihtiyac}</div>
-                  <div className="flex flex-wrap gap-1 my-1">
-                    {t.ticariUrunler.map((urun, j) => (
-                      <span key={j} className="px-2 py-0.5 rounded-full bg-slate-800 text-white">
-                        {urun}
+          {rapor.degerlendirmeler.length > 0 && (
+            <section>
+              <BolumBasligi ikon={KontrolIkonu}>Parametre Değerlendirmesi</BolumBasligi>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                {rapor.degerlendirmeler.map((d, i) => (
+                  <div key={i} className={`p-3 rounded-lg border text-xs ${DURUM_STIL[d.durum]}`}>
+                    <div className="flex items-center justify-between font-semibold">
+                      <span className="flex items-center gap-1.5">
+                        <span className={`h-1.5 w-1.5 rounded-full ${DURUM_NOKTA[d.durum]}`} />
+                        {d.parametre}
                       </span>
-                    ))}
+                      <span>{d.deger || '—'}</span>
+                    </div>
+                    <div className="mt-1 opacity-90">{d.yorum}</div>
                   </div>
-                  <div className="text-slate-600">{t.aciklama}</div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+                ))}
+              </div>
+            </section>
+          )}
 
-        <p className="text-[11px] text-slate-400 border-t pt-3">{rapor.kaynakUyarisi}</p>
+          {rapor.uyarilar.length > 0 && (
+            <section>
+              <BolumBasligi ikon={UyariIkonu}>Uyarılar</BolumBasligi>
+              <ul className="space-y-1.5">
+                {rapor.uyarilar.map((u, i) => (
+                  <li
+                    key={i}
+                    className="flex items-start gap-2 text-xs text-earth-800 bg-earth-50 border border-earth-200 rounded-lg px-3 py-2.5"
+                  >
+                    <UyariIkonu className="h-3.5 w-3.5 mt-0.5 shrink-0 text-earth-600" />
+                    {u}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {rapor.gubrelemeTakvimi.length > 0 && (
+            <section>
+              <BolumBasligi ikon={TakvimIkonu}>Gübreleme Takvimi</BolumBasligi>
+
+              {/* Mobilde geniş tablo yerine yığılmış kartlar; html-to-image PDF çıktısı
+                  o an ekranda görünen (masaüstü ya da mobil) düzeni birebir yakalar. */}
+              <div className="space-y-2 md:hidden">
+                {rapor.gubrelemeTakvimi.map((g, i) => (
+                  <div key={i} className="rounded-lg border border-border-subtle p-3 text-xs bg-surface">
+                    <div className="font-semibold text-brand-800 mb-1.5">{g.donem}</div>
+                    <dl className="space-y-1">
+                      <div className="flex justify-between gap-3">
+                        <dt className="text-foreground/50">Gübre</dt>
+                        <dd className="text-right font-medium">{g.gubre}</dd>
+                      </div>
+                      <div className="flex justify-between gap-3">
+                        <dt className="text-foreground/50">Doz</dt>
+                        <dd className="text-right font-medium">{g.dozKgDa} kg/da</dd>
+                      </div>
+                      <div className="flex justify-between gap-3">
+                        <dt className="text-foreground/50 shrink-0">Uygulama</dt>
+                        <dd className="text-right">{g.uygulamaSekli}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                ))}
+              </div>
+
+              <div className="hidden md:block overflow-x-auto rounded-lg border border-border-subtle">
+                <table className="w-full text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-surface-muted text-left text-foreground/60">
+                      <th className="p-2.5 font-semibold">Dönem</th>
+                      <th className="p-2.5 font-semibold">Gübre</th>
+                      <th className="p-2.5 font-semibold">Doz (kg/da)</th>
+                      <th className="p-2.5 font-semibold">Uygulama Şekli</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rapor.gubrelemeTakvimi.map((g, i) => (
+                      <tr key={i} className="odd:bg-surface even:bg-surface-muted/50 border-t border-border-subtle">
+                        <td className="p-2.5 font-medium text-brand-800">{g.donem}</td>
+                        <td className="p-2.5">{g.gubre}</td>
+                        <td className="p-2.5">{g.dozKgDa}</td>
+                        <td className="p-2.5">{g.uygulamaSekli}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
+
+          {rapor.ticariGubreKarsiliklari.length > 0 && (
+            <section>
+              <BolumBasligi ikon={EtiketIkonu}>Ticari Gübre Karşılıkları</BolumBasligi>
+              <div className="space-y-2">
+                {rapor.ticariGubreKarsiliklari.map((t, i) => (
+                  <div key={i} className="text-xs border border-border-subtle rounded-lg p-3.5 bg-surface">
+                    <div className="font-semibold text-foreground/80">{t.ihtiyac}</div>
+                    <div className="flex flex-wrap gap-1.5 my-2">
+                      {t.ticariUrunler.map((urun, j) => (
+                        <span
+                          key={j}
+                          className="px-2.5 py-1 rounded-full bg-brand-700 text-brand-50 font-medium"
+                        >
+                          {urun}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="text-foreground/60">{t.aciklama}</div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          <p className="text-[11px] text-foreground/40 border-t border-border-subtle pt-4">
+            {rapor.kaynakUyarisi}
+          </p>
+        </div>
       </div>
     </div>
   );

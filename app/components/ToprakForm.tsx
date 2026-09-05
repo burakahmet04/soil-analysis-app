@@ -2,15 +2,34 @@
 
 import { ChangeEvent } from 'react';
 import { BUNYE_LISTESI, ToprakFormValues, URUN_LISTESI } from '../lib/types';
+import { BelgeIkonu, YukleIkonu } from './icons';
 
-const SAYISAL_ALANLAR: { name: keyof ToprakFormValues; etiket: string }[] = [
+const SAYISAL_ALANLAR: { name: keyof ToprakFormValues; etiket: React.ReactNode }[] = [
   { name: 'ph', etiket: 'pH' },
   { name: 'kirec', etiket: 'Kireç (%)' },
   { name: 'organikMadde', etiket: 'Organik Madde (%)' },
   { name: 'ec', etiket: 'EC (dS/m)' },
-  { name: 'fosfor', etiket: 'Fosfor (P₂O₅ ppm)' },
-  { name: 'potasyum', etiket: 'Potasyum (K₂O ppm)' },
+  {
+    name: 'fosfor',
+    etiket: (
+      <>
+        Fosfor (P<sub>2</sub>O<sub>5</sub> ppm)
+      </>
+    ),
+  },
+  {
+    name: 'potasyum',
+    etiket: (
+      <>
+        Potasyum (K<sub>2</sub>O ppm)
+      </>
+    ),
+  },
 ];
+
+const girdiSinifi =
+  'w-full border border-border-subtle rounded-lg px-3 py-2.5 text-sm bg-surface text-foreground ' +
+  'placeholder:text-foreground/35 transition focus:outline-none focus:ring-2 focus:ring-brand-400/40 focus:border-brand-500';
 
 export default function ToprakForm({
   form,
@@ -40,89 +59,116 @@ export default function ToprakForm({
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-5">
-      <div className="border-2 border-dashed rounded-lg p-4 text-center bg-slate-50">
-        <label className="block text-xs font-semibold mb-2 text-slate-600">
-          Toprak Tahlil Raporu (Fotoğraf veya PDF) — Değerleri otomatik doldurmayı deneyelim
-        </label>
+    <form onSubmit={onSubmit} className="space-y-6">
+      <label
+        htmlFor="tahlil-dosyasi"
+        className="group flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed
+          border-brand-300 bg-brand-50/60 px-4 py-6 text-center transition
+          hover:border-brand-400 hover:bg-brand-50 has-[:disabled]:cursor-not-allowed has-[:disabled]:opacity-60"
+      >
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 text-brand-700 transition group-hover:bg-brand-200">
+          {ocrYukleniyor ? (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-brand-700 border-t-transparent" />
+          ) : (
+            <YukleIkonu className="h-5 w-5" />
+          )}
+        </span>
+        <span className="text-sm font-semibold text-brand-800">
+          Toprak tahlil raporunuzu yükleyin
+        </span>
+        <span className="text-xs text-foreground/50">
+          Fotoğraf veya PDF — değerleri sizin için otomatik dolduralım
+        </span>
         <input
+          id="tahlil-dosyasi"
           type="file"
           accept="image/jpeg,image/png,image/webp,application/pdf"
           onChange={handleDosya}
           disabled={ocrYukleniyor}
-          className="text-xs w-full"
+          className="sr-only"
         />
-        {ocrYukleniyor && (
-          <p className="text-xs text-slate-500 mt-2">Belge okunuyor, lütfen bekleyin...</p>
-        )}
-        {ocrHata && <p className="text-xs text-red-600 mt-2">{ocrHata}</p>}
-      </div>
+      </label>
+      {ocrHata && (
+        <p className="-mt-3 text-xs text-red-600" role="alert">
+          {ocrHata}
+        </p>
+      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-semibold mb-1">
-            Hedef Ürün <span className="text-red-500">*</span>
-          </label>
-          <select
-            name="urun"
-            value={form.urun}
-            onChange={handleInput}
-            required
-            className="w-full border rounded p-2 text-sm bg-white"
-          >
-            <option value="" disabled>
-              Seçiniz...
-            </option>
-            {URUN_LISTESI.map((urun) => (
-              <option key={urun} value={urun}>
-                {urun}
-              </option>
-            ))}
-          </select>
+      <div>
+        <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-foreground/45">
+          <BelgeIkonu className="h-4 w-4" />
+          Toprak Bilgileri
         </div>
 
-        <div>
-          <label className="block text-xs font-semibold mb-1">Toprak Bünyesi</label>
-          <select
-            name="bunye"
-            value={form.bunye}
-            onChange={handleInput}
-            className="w-full border rounded p-2 text-sm bg-white"
-          >
-            <option value="">Bilinmiyor</option>
-            {BUNYE_LISTESI.map((b) => (
-              <option key={b} value={b}>
-                {b}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {SAYISAL_ALANLAR.map(({ name, etiket }) => (
-          <div key={name}>
-            <label className="block text-xs font-semibold mb-1">{etiket}</label>
-            <input
-              type="number"
-              step="0.1"
-              name={name}
-              value={form[name]}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-semibold mb-1.5 text-foreground/70">
+              Hedef Ürün <span className="text-earth-500">*</span>
+            </label>
+            <select
+              name="urun"
+              value={form.urun}
               onChange={handleInput}
-              placeholder="Bilinmiyor"
-              className="w-full border rounded p-2 text-sm"
-            />
+              required
+              className={`${girdiSinifi} appearance-none`}
+            >
+              <option value="" disabled>
+                Seçiniz...
+              </option>
+              {URUN_LISTESI.map((urun) => (
+                <option key={urun} value={urun}>
+                  {urun}
+                </option>
+              ))}
+            </select>
           </div>
-        ))}
+
+          <div>
+            <label className="block text-xs font-semibold mb-1.5 text-foreground/70">Toprak Bünyesi</label>
+            <select
+              name="bunye"
+              value={form.bunye}
+              onChange={handleInput}
+              className={`${girdiSinifi} appearance-none`}
+            >
+              <option value="">Bilinmiyor</option>
+              {BUNYE_LISTESI.map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {SAYISAL_ALANLAR.map(({ name, etiket }) => (
+            <div key={name}>
+              <label className="block text-xs font-semibold mb-1.5 text-foreground/70">{etiket}</label>
+              <input
+                type="number"
+                step="0.1"
+                name={name}
+                value={form[name]}
+                onChange={handleInput}
+                placeholder="Bilinmiyor"
+                className={girdiSinifi}
+              />
+            </div>
+          ))}
+        </div>
       </div>
 
-      <p className="text-xs text-slate-400">
+      <p className="text-xs text-foreground/40">
         Yalnızca Hedef Ürün zorunludur; elinizde olmayan değerleri boş bırakabilirsiniz.
       </p>
 
       <button
         type="submit"
         disabled={yukleniyor}
-        className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-medium py-2.5 rounded transition disabled:opacity-50"
+        className="w-full bg-brand-700 hover:bg-brand-800 active:bg-brand-900 text-white font-medium py-3 rounded-lg
+          transition shadow-sm shadow-brand-900/20 disabled:opacity-50 disabled:pointer-events-none
+          flex items-center justify-center gap-2"
       >
+        {yukleniyor && <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/60 border-t-transparent" />}
         {yukleniyor ? 'Hesaplanıyor...' : 'Toprak Karnesini Oluştur'}
       </button>
     </form>
