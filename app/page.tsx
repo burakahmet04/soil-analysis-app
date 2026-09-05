@@ -28,6 +28,7 @@ export default function Home() {
   const [yukleniyor, setYukleniyor] = useState(false);
   const [ocrYukleniyor, setOcrYukleniyor] = useState(false);
   const [ocrHata, setOcrHata] = useState('');
+  const [ocrBilgi, setOcrBilgi] = useState('');
   const raporRef = useRef<HTMLDivElement>(null);
 
   const handleChange = (alan: keyof ToprakFormValues, deger: string) => {
@@ -36,6 +37,7 @@ export default function Home() {
 
   const handleDosyaSecildi = async (dosya: File) => {
     setOcrHata('');
+    setOcrBilgi('');
 
     if (dosya.size > MAX_DOSYA_BOYUTU) {
       setOcrHata('Dosya çok büyük (maks. 5MB).');
@@ -52,16 +54,24 @@ export default function Home() {
       });
       const veri = await res.json();
       if (veri.success) {
+        let doldurulanAlanSayisi = 0;
         setForm((onceki) => {
           const guncel = { ...onceki };
           for (const alan of ['bunye', 'ph', 'kirec', 'organikMadde', 'ec', 'fosfor', 'potasyum'] as const) {
             const deger = veri.alanlar?.[alan];
             if (typeof deger === 'string' && deger.trim()) {
               guncel[alan] = deger.trim();
+              doldurulanAlanSayisi += 1;
             }
           }
           return guncel;
         });
+
+        if (doldurulanAlanSayisi > 0) {
+          setOcrBilgi(`Belgeden ${doldurulanAlanSayisi} alan otomatik dolduruldu, kontrol edip düzenleyebilirsiniz.`);
+        } else {
+          setOcrHata('Belgeden herhangi bir toprak tahlil değeri okunamadı. Değerleri elle girebilir veya daha net bir görsel/PDF deneyebilirsiniz.');
+        }
       } else {
         setOcrHata(veri.error || 'Belge okunamadı.');
       }
@@ -129,6 +139,7 @@ export default function Home() {
             yukleniyor={yukleniyor}
             ocrYukleniyor={ocrYukleniyor}
             ocrHata={ocrHata}
+            ocrBilgi={ocrBilgi}
           />
 
           {raporHata && (

@@ -39,6 +39,7 @@ export default function ToprakForm({
   yukleniyor,
   ocrYukleniyor,
   ocrHata,
+  ocrBilgi,
 }: {
   form: ToprakFormValues;
   onChange: (alan: keyof ToprakFormValues, deger: string) => void;
@@ -47,6 +48,7 @@ export default function ToprakForm({
   yukleniyor: boolean;
   ocrYukleniyor: boolean;
   ocrHata: string;
+  ocrBilgi: string;
 }) {
   const handleInput = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     onChange(e.target.name as keyof ToprakFormValues, e.target.value);
@@ -91,6 +93,11 @@ export default function ToprakForm({
       {ocrHata && (
         <p className="-mt-3 text-xs text-red-600" role="alert">
           {ocrHata}
+        </p>
+      )}
+      {ocrBilgi && (
+        <p className="-mt-3 text-xs text-brand-700" role="status">
+          {ocrBilgi}
         </p>
       )}
 
