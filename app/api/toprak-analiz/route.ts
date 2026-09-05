@@ -1,24 +1,24 @@
 import { GoogleGenAI, Type } from '@google/genai';
 import { NextResponse } from 'next/server';
+import { TAHLIL_ALAN_ADLARI, TahlilAlanAdi } from '../../lib/types';
 
-const OPSIYONEL_ALANLAR = [
-  'bunye',
-  'ph',
-  'kirec',
-  'organikMadde',
-  'ec',
-  'fosfor',
-  'potasyum',
-] as const;
-
-const ALAN_ETIKETLERI: Record<(typeof OPSIYONEL_ALANLAR)[number], string> = {
-  bunye: 'Bünye',
+const ALAN_ETIKETLERI: Record<TahlilAlanAdi, string> = {
+  bunye: 'Bünye (saturasyon sınıfı)',
   ph: 'pH',
   kirec: 'Kireç (%)',
   organikMadde: 'Organik Madde (%)',
   ec: 'EC (dS/m)',
-  fosfor: 'Fosfor (P2O5, ppm)',
-  potasyum: 'Potasyum (K2O, ppm)',
+  azot: 'Azot - N (%)',
+  fosfor: 'Fosfor - P (ppm, Olsen/Bray-Kurtz)',
+  potasyum: 'Potasyum - K (ppm)',
+  kalsiyum: 'Kalsiyum - Ca (ppm)',
+  magnezyum: 'Magnezyum - Mg (ppm)',
+  sodyum: 'Sodyum - Na (ppm)',
+  demir: 'Demir - Fe (ppm)',
+  bakir: 'Bakır - Cu (ppm)',
+  cinko: 'Çinko - Zn (ppm)',
+  mangan: 'Mangan - Mn (ppm)',
+  bor: 'Bor - B (ppm)',
 };
 
 const MAX_TEXT_LENGTH = 200;
@@ -116,7 +116,7 @@ export async function POST(req: Request) {
 
   const degerSatirlari: string[] = [];
   const eksikAlanlar: string[] = [];
-  for (const alan of OPSIYONEL_ALANLAR) {
+  for (const alan of TAHLIL_ALAN_ADLARI) {
     const deger = toSafeText(body[alan]);
     if (deger) {
       degerSatirlari.push(`- ${ALAN_ETIKETLERI[alan]}: ${deger}`);
@@ -142,8 +142,16 @@ Eksik değerler için varsayım yapıp uydurma rakam üretme; bunun yerine genel
       model: 'gemini-3.6-flash',
       contents: promptInput,
       config: {
-        systemInstruction: `Sen uzman bir Ziraat Mühendisisin. Toprak analiz değerlerini değerlendirip bir "Toprak Karnesi" hazırlıyorsun.
-Kilitlenen elementleri, ıslah tavsiyelerini, dönemsel gübreleme takvimini (kg/da) ve önerilen gübrelerin Türkiye piyasasında bilinen ticari/tecimsel karşılıklarını (örn. "Amonyum Sülfat %21", "DAP (18-46-0)", "Potasyum Sülfat %50", "20-20-0 Kompoze") somut biçimde raporla. kaynakUyarisi alanına bu raporun yapay zeka tarafından üretildiğini, kesin bir agronomi/laboratuvar teşhisinin yerine geçmeyeceğini belirten kısa bir not yaz.`,
+        systemInstruction: `Sen uzman bir Ziraat Mühendisisin. Türkiye'deki akredite toprak laboratuvarlarının standart "ANALİZ-3" paketine
+benzer bir makro+mikro besin element paneli (pH, kireç, organik madde, EC, azot, fosfor, potasyum, kalsiyum, magnezyum,
+sodyum, demir, bakır, çinko, mangan, bor) değerlendirip bir "Toprak Karnesi" hazırlıyorsun.
+Element etkileşimlerini dikkate al: örn. yüksek kireç/pH fosfor ve mikro elementleri (Fe, Zn, Mn) kilitleyebilir; yüksek
+sodyum/EC tuzluluk-alkalilik riskine işaret eder; kalsiyum/magnezyum dengesizliği potasyum/magnezyum alımını etkileyebilir.
+Kilitlenen elementleri, ıslah tavsiyelerini, dönemsel gübreleme takvimini (kg/da) ve önerilen gübrelerin Türkiye
+piyasasında bilinen ticari/tecimsel karşılıklarını (örn. "Amonyum Sülfat %21", "DAP (18-46-0)", "Potasyum Sülfat %50",
+"20-20-0 Kompoze", çinko/demir şelatları gibi mikro element gübreleri) somut biçimde raporla. Sadece değeri girilen
+parametreleri değerlendir; girilmeyenler için uydurma rakam üretme. kaynakUyarisi alanına bu raporun yapay zeka
+tarafından üretildiğini, kesin bir agronomi/laboratuvar teşhisinin yerine geçmeyeceğini belirten kısa bir not yaz.`,
         responseMimeType: 'application/json',
         responseSchema: raporSchema,
       },

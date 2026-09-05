@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import ToprakForm from './components/ToprakForm';
 import ToprakKarnesiGorunumu from './components/ToprakKarnesiGorunumu';
 import { YaprakIkonu } from './components/icons';
-import { BOS_FORM, ToprakFormValues, ToprakKarnesi } from './lib/types';
+import { BOS_FORM, TAHLIL_ALAN_ADLARI, ToprakFormValues, ToprakKarnesi } from './lib/types';
 
 const MAX_DOSYA_BOYUTU = 5 * 1024 * 1024; // 5MB
 
@@ -57,7 +57,7 @@ export default function Home() {
         let doldurulanAlanSayisi = 0;
         setForm((onceki) => {
           const guncel = { ...onceki };
-          for (const alan of ['bunye', 'ph', 'kirec', 'organikMadde', 'ec', 'fosfor', 'potasyum'] as const) {
+          for (const alan of TAHLIL_ALAN_ADLARI) {
             const deger = veri.alanlar?.[alan];
             if (typeof deger === 'string' && deger.trim()) {
               guncel[alan] = deger.trim();

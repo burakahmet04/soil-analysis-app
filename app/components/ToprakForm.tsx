@@ -4,32 +4,70 @@ import { ChangeEvent } from 'react';
 import { BUNYE_LISTESI, ToprakFormValues, URUN_LISTESI } from '../lib/types';
 import { BelgeIkonu, YukleIkonu } from './icons';
 
-const SAYISAL_ALANLAR: { name: keyof ToprakFormValues; etiket: React.ReactNode }[] = [
+const TEMEL_ALANLAR: { name: keyof ToprakFormValues; etiket: React.ReactNode }[] = [
   { name: 'ph', etiket: 'pH' },
   { name: 'kirec', etiket: 'Kireç (%)' },
   { name: 'organikMadde', etiket: 'Organik Madde (%)' },
   { name: 'ec', etiket: 'EC (dS/m)' },
-  {
-    name: 'fosfor',
-    etiket: (
-      <>
-        Fosfor (P<sub>2</sub>O<sub>5</sub> ppm)
-      </>
-    ),
-  },
-  {
-    name: 'potasyum',
-    etiket: (
-      <>
-        Potasyum (K<sub>2</sub>O ppm)
-      </>
-    ),
-  },
+];
+
+const MAKRO_ALANLAR: { name: keyof ToprakFormValues; etiket: React.ReactNode }[] = [
+  { name: 'azot', etiket: 'Azot - N (%)' },
+  { name: 'fosfor', etiket: 'Fosfor - P (ppm)' },
+  { name: 'potasyum', etiket: 'Potasyum - K (ppm)' },
+  { name: 'kalsiyum', etiket: 'Kalsiyum - Ca (ppm)' },
+  { name: 'magnezyum', etiket: 'Magnezyum - Mg (ppm)' },
+  { name: 'sodyum', etiket: 'Sodyum - Na (ppm)' },
+];
+
+const MIKRO_ALANLAR: { name: keyof ToprakFormValues; etiket: React.ReactNode }[] = [
+  { name: 'demir', etiket: 'Demir - Fe (ppm)' },
+  { name: 'bakir', etiket: 'Bakır - Cu (ppm)' },
+  { name: 'cinko', etiket: 'Çinko - Zn (ppm)' },
+  { name: 'mangan', etiket: 'Mangan - Mn (ppm)' },
+  { name: 'bor', etiket: 'Bor - B (ppm)' },
 ];
 
 const girdiSinifi =
   'w-full border border-border-subtle rounded-lg px-3 py-2.5 text-sm bg-surface text-foreground ' +
   'placeholder:text-foreground/35 transition focus:outline-none focus:ring-2 focus:ring-brand-400/40 focus:border-brand-500';
+
+function AltBaslik({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[11px] font-semibold uppercase tracking-wide text-foreground/40 mb-2 mt-4 first:mt-0">
+      {children}
+    </p>
+  );
+}
+
+function SayisalAlanGrubu({
+  alanlar,
+  form,
+  onInput,
+}: {
+  alanlar: { name: keyof ToprakFormValues; etiket: React.ReactNode }[];
+  form: ToprakFormValues;
+  onInput: (e: ChangeEvent<HTMLInputElement>) => void;
+}) {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      {alanlar.map(({ name, etiket }) => (
+        <div key={name}>
+          <label className="block text-xs font-semibold mb-1.5 text-foreground/70">{etiket}</label>
+          <input
+            type="number"
+            step="0.01"
+            name={name}
+            value={form[name]}
+            onChange={onInput}
+            placeholder="—"
+            className={girdiSinifi}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function ToprakForm({
   form,
@@ -107,7 +145,7 @@ export default function ToprakForm({
           Toprak Bilgileri
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-2">
           <div>
             <label className="block text-xs font-semibold mb-1.5 text-foreground/70">
               Hedef Ürün <span className="text-earth-500">*</span>
@@ -146,22 +184,16 @@ export default function ToprakForm({
               ))}
             </select>
           </div>
-
-          {SAYISAL_ALANLAR.map(({ name, etiket }) => (
-            <div key={name}>
-              <label className="block text-xs font-semibold mb-1.5 text-foreground/70">{etiket}</label>
-              <input
-                type="number"
-                step="0.1"
-                name={name}
-                value={form[name]}
-                onChange={handleInput}
-                placeholder="Bilinmiyor"
-                className={girdiSinifi}
-              />
-            </div>
-          ))}
         </div>
+
+        <AltBaslik>Temel Özellikler</AltBaslik>
+        <SayisalAlanGrubu alanlar={TEMEL_ALANLAR} form={form} onInput={handleInput} />
+
+        <AltBaslik>Makro Besin Elementleri</AltBaslik>
+        <SayisalAlanGrubu alanlar={MAKRO_ALANLAR} form={form} onInput={handleInput} />
+
+        <AltBaslik>Mikro Besin Elementleri</AltBaslik>
+        <SayisalAlanGrubu alanlar={MIKRO_ALANLAR} form={form} onInput={handleInput} />
       </div>
 
       <p className="text-xs text-foreground/40">

@@ -1,21 +1,14 @@
 import { GoogleGenAI, Type } from '@google/genai';
 import { NextResponse } from 'next/server';
+import { TAHLIL_ALAN_ADLARI } from '../../lib/types';
 
 const IZIN_VERILEN_TIPLER = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
 const MAX_BASE64_UZUNLUGU = 7_000_000; // ~5MB ham dosya
 
 const alanlarSchema = {
   type: Type.OBJECT,
-  properties: {
-    bunye: { type: Type.STRING },
-    ph: { type: Type.STRING },
-    kirec: { type: Type.STRING },
-    organikMadde: { type: Type.STRING },
-    ec: { type: Type.STRING },
-    fosfor: { type: Type.STRING },
-    potasyum: { type: Type.STRING },
-  },
-  required: ['bunye', 'ph', 'kirec', 'organikMadde', 'ec', 'fosfor', 'potasyum'],
+  properties: Object.fromEntries(TAHLIL_ALAN_ADLARI.map((alan) => [alan, { type: Type.STRING }])),
+  required: [...TAHLIL_ALAN_ADLARI],
 };
 
 export async function POST(req: Request) {
@@ -63,10 +56,20 @@ export async function POST(req: Request) {
         'Bu bir toprak tahlil raporu görseli/PDF\'idir. İçindeki değerleri çıkar.',
       ],
       config: {
-        systemInstruction: `Sen bir toprak tahlil raporu okuma asistanısın. Sağlanan görsel/PDF içindeki toprak tahlil değerlerini oku ve şemadaki alanlara yerleştir.
-Bir değeri raporda bulamıyorsan veya okuyamıyorsan o alanı boş string ("") olarak bırak, asla tahmin veya uydurma değer üretme.
-bunye alanı için sadece şu değerlerden birini kullan (en yakınını seç): Kumlu, Tınlı, Killi, Killi-Tınlı, Kumlu-Tınlı, Siltli. Eminsen değilsen boş bırak.
-Sayısal alanlar (ph, kirec, organikMadde, ec, fosfor, potasyum) için sadece sayıyı yaz, birim ekleme.`,
+        systemInstruction: `Sen bir toprak tahlil raporu okuma asistanısın. Sağlanan görsel/PDF, Türkiye'deki akredite bir tarımsal analiz
+laboratuvarının (örn. METALAB gibi) düzenlediği "Toprak Analiz Raporu" olabilir. Genelde "Analiz Sonuçları" başlıklı bir
+tabloda parametre adı, birim, yöntem ve "Analiz Sonucu" sütunları bulunur — değerleri her zaman "Analiz Sonucu"
+sütunundan al, sınır/referans değer sütunlarından değil.
+
+Aranacak parametreler ve olası adları: pH, Kireç, Organik Madde, EC (iletkenlik), Azot (N), Fosfor (P), Potasyum (K),
+Kalsiyum (Ca), Magnezyum (Mg), Sodyum (Na), Demir (Fe), Bakır (Cu), Çinko (Zn), Mangan (Mn), Bor (B).
+Sayısal alanlar için şemadaki alanlara sadece sayıyı yaz (virgülü nokta yapabilirsin), birim ekleme.
+
+bunye alanı için raporda "SATURASYON" veya "BÜNYE" satırının "Değerlendirme"/"Sonuç" sütununda genelde doğrudan yazan
+sınıfı kullan (KUM, TINLI, KİLLİ TINLI, KİL veya AĞIR KİL) — bunlardan en yakınını seç. Emin değilsen boş bırak.
+
+Bir değeri raporda bulamıyorsan veya net okuyamıyorsan o alanı boş string ("") olarak bırak, asla tahmin veya uydurma
+değer üretme.`,
         responseMimeType: 'application/json',
         responseSchema: alanlarSchema,
       },

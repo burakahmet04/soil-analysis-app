@@ -26,36 +26,39 @@ export const URUN_LISTESI = [
   'Diğer',
 ] as const;
 
-export const BUNYE_LISTESI = [
-  'Kumlu',
-  'Tınlı',
-  'Killi',
-  'Killi-Tınlı',
-  'Kumlu-Tınlı',
-  'Siltli',
-  'Diğer',
+// Türkiye'deki akredite toprak laboratuvarlarının (örn. TS 8333 saturasyon
+// yüzdesine dayalı) kullandığı standart 5'li bünye sınıflandırması.
+export const BUNYE_LISTESI = ['Kum', 'Tınlı', 'Killi Tınlı', 'Kil', 'Ağır Kil', 'Diğer'] as const;
+
+// Hedef Ürün dışında formda/OCR'da/analiz isteğinde yer alan, tamamı opsiyonel
+// tahlil alanlarının TEK kaynağı. Yeni bir parametre eklerken sadece burayı
+// güncellemek yeterli — form, OCR şeması ve analiz isteği hepsi buradan türer.
+export const TAHLIL_ALAN_ADLARI = [
+  'bunye',
+  'ph',
+  'kirec',
+  'organikMadde',
+  'ec',
+  'azot',
+  'fosfor',
+  'potasyum',
+  'kalsiyum',
+  'magnezyum',
+  'sodyum',
+  'demir',
+  'bakir',
+  'cinko',
+  'mangan',
+  'bor',
 ] as const;
 
-export interface ToprakFormValues {
-  urun: string;
-  bunye: string;
-  ph: string;
-  kirec: string;
-  organikMadde: string;
-  ec: string;
-  fosfor: string;
-  potasyum: string;
-}
+export type TahlilAlanAdi = (typeof TAHLIL_ALAN_ADLARI)[number];
+
+export type ToprakFormValues = { urun: string } & Record<TahlilAlanAdi, string>;
 
 export const BOS_FORM: ToprakFormValues = {
   urun: '',
-  bunye: '',
-  ph: '',
-  kirec: '',
-  organikMadde: '',
-  ec: '',
-  fosfor: '',
-  potasyum: '',
+  ...(Object.fromEntries(TAHLIL_ALAN_ADLARI.map((alan) => [alan, ''])) as Record<TahlilAlanAdi, string>),
 };
 
 export type Durum = 'düşük' | 'yeterli' | 'yüksek' | 'bilinmiyor';
